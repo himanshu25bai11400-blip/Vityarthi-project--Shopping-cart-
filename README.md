@@ -1,4 +1,4 @@
-Vityarthi project Shopping cart system :-
+Vityarthi project Shopping cart system :- 
 
 1. Shopping Cart Program in Python:-
 
