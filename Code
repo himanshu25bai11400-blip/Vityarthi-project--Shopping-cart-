@@ -1,41 +1,131 @@
 
+# Shopping Cart System 
+import os
+from datetime import datetime
+
+# product catalog
+products = [
+    {"id": 1, "name": "Laptop",      "price": 45000},
+    {"id": 2, "name": "Mouse",       "price": 800},
+    {"id": 3, "name": "Keyboard",    "price": 1500},
+    {"id": 4, "name": "Headphones",  "price": 2200},
+    {"id": 5, "name": "Webcam",      "price": 3500},
+    {"id": 6, "name": "USB Drive 64GB", "price": 1200}
+]
 
 cart = []
-prices = []
 
-def show_cart():
-    print("\n----- YOUR CART -----")
+def display_products():
+    print("\n{:<5} {:<20} {:<10}".format("ID", "Product", "Price"))
+    print("-" * 35)
+    for p in products:
+        print("{:<5} {:<20} ₹{:<10}".format(p["id"], p["name"], p["price"]))
+
+def add_to_cart():
+    display_products()
+    try:
+        pid = int(input("\nEnter Product ID: "))
+        qty = int(input("Enter Quantity: "))
+        if qty <= 0:
+            print("Quantity must be positive!")
+            return
+        product = next((p for p in products if p["id"] == pid), None)
+        if product:
+            cart.append({"name": product["name"], "price": product["price"], "qty": qty})
+            print(f"Added {qty} x {product['name']} to cart!")
+        else:
+            print("Invalid Product ID!")
+    except:
+        print("Invalid input!")
+
+def view_cart():
     if not cart:
-        print("Your cart is empty.")
-    else:
-        for i, item in enumerate(cart):
-            print(f"{i+1}. {item} - ${prices[i]:.2f}")
-        total = sum(prices)
-        print(f"Total: ${total:.2f}")
+        print("\nYour cart is empty!")
+        return
+    print("\nYour Cart:")
+    print("{:<20} {:<8} {:<10} {:<10}".format("Item", "Qty", "Price", "Total"))
+    print("-" * 50)
+    subtotal = 0
+    for item in cart:
+        total = item["price"] * item["qty"]
+        subtotal += total
+        print("{:<20} {:<8} ₹{:<9} ₹{:<10}".format(item["name"], item["qty"], item["price"], total))
+    gst = subtotal * 0.18
+    grand_total = subtotal + gst
+    print("-" * 50)
+    print(f"Subtotal:           ₹{subtotal}")
+    print(f"GST (18%):          ₹{gst}")
+    print(f"Grand Total:        ₹{grand_total}")
 
+def remove_from_cart():
+    view_cart()
+    if cart:
+        try:
+            index = int(input("\nEnter item number to remove (1 to {}): ".format(len(cart)))) - 1
+            removed = cart.pop(index)
+            print(f"Removed {removed['name']} from cart.")
+        except:
+            print("Invalid selection!")
+
+def generate_bill():
+    if not cart:
+        print("Cart is empty! Add items first.")
+        return
+    view_cart()
+    confirm = input("\nConfirm purchase? (yes/no): ").lower()
+    if confirm == "yes" or confirm == "y":
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"bill_{timestamp}.txt"
+        
+        with open(filename, "w") as f:
+            f.write("═" * 50 + "\n")
+            f.write("       YOUR SHOPPING BILL\n")
+            f.write("═" * 50 + "\n")
+            f.write(f"Date & Time: {datetime.now().strftime('%d-%m-%Y %I:%M %p')}\n\n")
+            f.write("{:<20} {:<8} {:<10} {:<10}\n".format("Item", "Qty", "Price", "Total"))
+            f.write("-" * 50 + "\n")
+            subtotal = 0
+            for item in cart:
+                total = item["price"] * item["qty"]
+                subtotal += total
+                f.write("{:<20} {:<8} ₹{:<9} ₹{:<10}\n".format(item["name"], item["qty"], item["price"], total))
+            gst = subtotal * 0.18
+            grand = subtotal + gst
+            f.write("-" * 50 + "\n")
+            f.write(f"Subtotal:            ₹{subtotal}\n")
+            f.write(f"GST 18%:             ₹{gst}\n")
+            f.write(f"Grand Total:         ₹{grand}\n")
+            f.write("═" * 50 + "\n")
+            f.write("         Thank You! Visit Again 😊\n")
+        
+        print(f"\nPurchase successful! Bill saved as {filename}")
+        cart.clear()
+
+# Main Menu Loop
 while True:
-    print("\nOptions:")
-    print("1. Add item")
-    print("2. Show cart")
-    print("3. Checkout and exit")
-
-    choice = input("Choose an option (1-3): ")
+    print("\n" + "═" * 40)
+    print("   WELCOME TO SHOPPING CART SYSTEM")
+    print("═" * 40)
+    print("1. View Products")
+    print("2. Add to Cart")
+    print("3. View Cart")
+    print("4. Remove from Cart")
+    print("5. Checkout & Generate Bill")
+    print("6. Exit")
+    choice = input("\nChoose option (1-6): ")
 
     if choice == "1":
-        item = input("Enter the item name: ")
-        try:
-            price = float(input(f"Enter the price of {item}: $"))
-        except ValueError:
-            print("Invalid price, please enter a number.")
-            continue
-        cart.append(item)
-        prices.append(price)
-        print(f"Added {item} for ${price:.2f} to your cart.")
+        display_products()
     elif choice == "2":
-        show_cart()
+        add_to_cart()
     elif choice == "3":
-        show_cart()
-        print("Thank you for shopping!")
+        view_cart()
+    elif choice == "4":
+        remove_from_cart()
+    elif choice == "5":
+        generate_bill()
+    elif choice == "6":
+        print("\nThank you for shopping with us! Goodbye!")
         break
     else:
-        print("Invalid choice. Please select 1, 2, or 3.")
+        print("Invalid choice! Try again.")
